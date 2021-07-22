@@ -19,6 +19,7 @@
     "react-dom": "^16.8.6",
     "react-redux": "^6.0.1",
     "react-scripts": "3.4.0",
+    "reactstrap": "^8.9.0",
     "redux": "^4.0.1",
     "typescript": "~3.7.2"
   },

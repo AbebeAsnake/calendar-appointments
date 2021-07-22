@@ -44,19 +44,23 @@ interface Props extends WithStyles<typeof styles>{
 
 const AddReminder = (props: Props) => {
 	const[displayColorPicker, displayColor] = useState(false);
-	const[color, setColor] = useState({
+	const[reminderNote, noteHandler] = useState('');
+	const[reminderDate, dateHandler] = useState('');
+	const[reminderTime, timeHandler] = useState('7:30');
+	const[reminderColor, colorHandler] = useState({
       r: '241',
       g: '112',
       b: '19',
       a: '1'
     });
+	const[reminder, reminderHandler] = useState({});
 const styles = reactCSS({
       'default': {
         color: {
           width: '38px',
           height: '18px',
           borderRadius: '2px',
-          background: `rgba(${color.r }, ${color.g }, ${color.b }, ${color.a })`,
+          background: `rgba(${reminderColor.r }, ${reminderColor.g }, ${reminderColor.b }, ${reminderColor.a })`,
         },
         swatch: {
           padding: '2px',
@@ -82,7 +86,6 @@ const styles = reactCSS({
       },
     });
 		const { classes, isOpen, onClose } = props;
-
 		return (
 			<Dialog
 				open={ isOpen }
@@ -100,7 +103,7 @@ const styles = reactCSS({
 				<Divider light />
 				<DialogContent className={ classes.addReminderFormContainer }>
 					<Typography>
-						  <TextField className ={classes.addNote}  id="standard-basic" label="Add Note(Maximum of 30 character)" fullWidth = {true} />
+						  <TextField className ={classes.addNote} value ={reminderNote} onChange={(value) => noteHandler(value.target.value)}   id="standard-basic" label="Add Note(Maximum of 30 character)" fullWidth = {true} />
 						<form noValidate>
   <TextField
     id="date"
@@ -109,6 +112,7 @@ const styles = reactCSS({
     InputLabelProps={{
       shrink: true,
     }}
+	onChange={ (date) => dateHandler(date.target.value)}
   />
 
   <TextField
@@ -119,6 +123,7 @@ const styles = reactCSS({
     InputLabelProps={{
       shrink: true,
     }}
+	onChange={(value) => timeHandler(value.target.value)}
     
   />
         <div style={ styles.swatch } onClick={ () => displayColor(!displayColorPicker) }>
@@ -126,10 +131,10 @@ const styles = reactCSS({
         </div>
         { displayColorPicker ? <div style={ styles.popover }>
           <div style={ styles.cover } onClick={() => displayColor(false)}/>
-          <SketchPicker color={ color } onChange={(color) => setColor(color.rgb) } />
+          <SketchPicker color={ reminderColor } onChange={(color) => colorHandler(color.rgb) } />
         </div> : null }
 
-</form> <Button className={classes.saveButton} variant="outlined">Save</Button>
+</form> <Button className={classes.saveButton} variant="outlined" onClick={() => reminderHandler({reminderNote, reminderDate, reminderTime, reminderColor})}>Save</Button>
 					</Typography>
 				</DialogContent>
 			</Dialog>
