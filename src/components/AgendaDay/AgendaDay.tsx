@@ -50,7 +50,7 @@ const AgendaDay = (props: Props) => {
 	const { classes, agendaStatus, onClose } = props;
 	const dateTitle = agendaStatus.date ? dateFns.format( agendaStatus.date, 'LLLL do, yyyy' ) : 'Closing';
 const getReminders = useSelector((state: RootState) => (date: string) =>
-    state.addReminder.reminders.sort((c, d) =>  new Date(_.split(c.datetime, 'T', 1)) > new Date(_.split(d.datetime, 'T', 1)) ? 1: -1)) ; 
+    state.addReminder.reminders.sort((c, d) => new Date(_.split(c.datetime, 'T', 1)) > new Date(_.split(d.datetime, 'T', 1)) ? 1: -1)) ; 
 	const reminders = getReminders(agendaStatus?.date?.toISOString());
 
 	return (
