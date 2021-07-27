@@ -1,144 +1,136 @@
-import React,{useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import * as constants from '../../utils/constants';
+import * as regEx from '../../utils/regExUtils'
 import CloseIcon from '@material-ui/icons/Close';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
 import { WithStyles, withStyles, createStyles, Theme } from '@material-ui/core/styles';
-import { TextField, Button  } from '@material-ui/core';
-import { SketchPicker } from 'react-color';
-import reactCSS from 'reactcss';
+import { Button, FormControl, FormHelperText, Input, InputLabel, TextField } from '@material-ui/core';
+import {convertDateToInputString} from '../../utils/dateUtils';
+import { Reminder } from './AddReminderContainer';
 
 const styles = (theme: Theme) => createStyles({
 	addReminderFormContainer: {
 		minHeight: '250px',
-		marginTop: '10px',
+		marginTop: '0px',
 		display: 'flex',
 		flexDirection: 'column'
+	},
+	addReminderFormField: {
+		marginTop: '10px',
+		marginBottom: '10px'
 	},
 	closeButton: {
 		position: 'absolute',
 		right: '10px',
 		top: '10px'
-	},
-	addNote:{
-		marginBottom:'10px'
-	},
-	saveButton:{
-		marginTop:'50px',
-		float: 'right'
-		
-	},
-	sketchPicker:{
-		marginTop: "50px"
 	}
-      
 });
 
 interface Props extends WithStyles<typeof styles>{
 	isOpen: boolean,
-	onClose: () => void
+	onClose: () => void,
+	onAddReminder: (reminder: Reminder) => void
 }
 
+const checkSubmitDisabled = (title: string): boolean => !title || regEx.isValidTitleLength(title)
+export const createReminderKey = (reminder: Reminder) => `${reminder.title}${reminder.datetime}`
+
+const DEFAULT_DATETIME = convertDateToInputString(new Date());
 const AddReminder = (props: Props) => {
-	const[displayColorPicker, displayColor] = useState(false);
-	const[reminderNote, noteHandler] = useState('');
-	const[reminderDate, dateHandler] = useState('');
-	const[reminderTime, timeHandler] = useState('7:30');
-	const[reminderColor, colorHandler] = useState({
-      r: '241',
-      g: '112',
-      b: '19',
-      a: '1'
-    });
-	const[reminder, reminderHandler] = useState({});
-const styles = reactCSS({
-      'default': {
-        color: {
-          width: '38px',
-          height: '18px',
-          borderRadius: '2px',
-          background: `rgba(${reminderColor.r }, ${reminderColor.g }, ${reminderColor.b }, ${reminderColor.a })`,
-        },
-        swatch: {
-          padding: '2px',
-		  marginTop: '29px',
-		  marginLeft: '10px',
-          background: '#fff',
-          borderRadius: '1px',
-          boxShadow: '0 0 0 1px rgba(0,0,0,.1)',
-          display: 'inline-block',
-          cursor: 'pointer',
-        },
-        popover: {
-    position: 'relative',
-          zIndex: '2',
-        },
-        cover: {
-          position: 'fixed',
-          top: '0px',
-          right: '0px',
-          bottom: '0px',
-          left: '0px',
-        },
-      },
-    });
-		const { classes, isOpen, onClose } = props;
-		return (
-			<Dialog
-				open={ isOpen }
-				onClose={onClose}
-				aria-labelledby='form-dialog-title'
-				fullWidth={ true }
-				maxWidth='md'
-			>
-				<DialogTitle id='form-dialog-title'>
-					Add Reminder
-					<IconButton aria-label='Close' className={ classes.closeButton } onClick={onClose}>
-						<CloseIcon />
-					</IconButton>
-				</DialogTitle>
-				<Divider light />
-				<DialogContent className={ classes.addReminderFormContainer }>
-					<Typography>
-						  <TextField className ={classes.addNote} value ={reminderNote} onChange={(value) => noteHandler(value.target.value)}   id="standard-basic" label="Add Note(Maximum of 30 character)" fullWidth = {true} />
-						<form noValidate>
-  <TextField
-    id="date"
-    label="date"
-       type="date"
-    InputLabelProps={{
-      shrink: true,
-    }}
-	onChange={ (date) => dateHandler(date.target.value)}
-  />
+	const initialState = {
+  title: constants.DEFAULT_TITLE,
+  datetime: DEFAULT_DATETIME,
+  color: constants.DEFAULT_COLOR
+};
+	const { classes, isOpen, onClose, onAddReminder } = props;
 
-  <TextField
-    id="time"
-    label="Time"
-	type="time"
-    defaultValue="07:30"
-    InputLabelProps={{
-      shrink: true,
-    }}
-	onChange={(value) => timeHandler(value.target.value)}
-    
-  />
-        <div style={ styles.swatch } onClick={ () => displayColor(!displayColorPicker) }>
-          <div style={ styles.color } />
-        </div>
-        { displayColorPicker ? <div style={ styles.popover }>
-          <div style={ styles.cover } onClick={() => displayColor(false)}/>
-          <SketchPicker color={ reminderColor } onChange={(color) => colorHandler(color.rgb) } />
-        </div> : null }
+	 const[title, titleHandler] = useState(constants.DEFAULT_TITLE);
+	const [datetime, dateTimeHandler] = useState(DEFAULT_DATETIME);
+	const [color, colorHandler] = useState(constants.DEFAULT_COLOR);
 
-</form> <Button className={classes.saveButton} variant="outlined" onClick={() => reminderHandler({reminderNote, reminderDate, reminderTime, reminderColor})}>Save</Button>
-					</Typography>
-				</DialogContent>
-			</Dialog>
-		);
+	const onClickSaveReminder = useCallback(() => {
+		onAddReminder({
+			title,
+			datetime,
+			color
+		})
+		onClose()
+	}, [onAddReminder, title, datetime, color, onClose]);
+
+	useEffect(() => {
+		titleHandler(constants.DEFAULT_TITLE)
+		colorHandler(constants.DEFAULT_COLOR)
+		dateTimeHandler(DEFAULT_DATETIME)
+	},  [isOpen]);
+
+	return (
+		<Dialog
+			open={ isOpen }
+			onClose={onClose}
+			aria-labelledby='form-dialog-title'
+			fullWidth={ true }
+			maxWidth='md'
+		>
+			<DialogTitle id='form-dialog-title'>
+				{constants.ADD_REMINDER}
+				<IconButton aria-label='Close' className={ classes.closeButton } onClick={onClose}>
+					<CloseIcon />
+				</IconButton>
+			</DialogTitle>
+			<Divider light />
+			<DialogContent className={ classes.addReminderFormContainer }>
+				<FormControl className={ classes.addReminderFormField }>
+					<TextField
+						id="reminder-title"
+						type="text"
+						value={title}
+						onChange={(value) => titleHandler(value.target.value)} 
+						error={regEx.isValidTitleLength(title)}
+						label={constants.REMINDER_TITLE}
+						helperText={regEx.isValidTitleLength(title) && constants.REMINDER_TITLE_VALIDATION}
+					/>
+					<FormHelperText id="reminder-title-helper-text">
+						This will display as text in the calendar month view.
+					</FormHelperText>
+				</FormControl>
+				<FormControl className={ classes.addReminderFormField }>
+					<InputLabel htmlFor="reminder-color">Reminder Color</InputLabel>
+					<Input
+						id="reminder-color"
+						type="color"
+						value={color}
+						onChange={(value) => colorHandler(value.target.value)} 
+					/>
+					<FormHelperText id="reminder-color-helper-text">
+						Reminder background color.
+					</FormHelperText>
+				</FormControl>
+				<FormControl className={ classes.addReminderFormField }>
+					<InputLabel htmlFor="reminder-datetime">Reminder Date &amp; Time</InputLabel>
+					<Input
+						id="reminder-datetime"
+						type="datetime-local"
+						value={datetime}
+						onChange={(value) => dateTimeHandler(value.target.value)} 
+					/>
+					<FormHelperText id="reminder date-time">
+						Date time reminder.
+					</FormHelperText>
+				</FormControl>
+				<FormControl className={ classes.addReminderFormField }>
+					<Button
+						variant="contained"
+						color="primary"
+						disabled={checkSubmitDisabled(title)}
+						onClick={onClickSaveReminder}
+					>Save</Button>
+				</FormControl>
+			</DialogContent>
+		</Dialog>
+	);
 }
-
 export default withStyles(styles)( AddReminder );
